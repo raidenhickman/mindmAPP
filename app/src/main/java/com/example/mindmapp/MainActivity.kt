@@ -19,17 +19,21 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var rootLayout: FrameLayout
     private lateinit var addButton: Button
-
-    private var boxes = mutableListOf<EditText>()
+    private lateinit var deleteButton: Button
+    private lateinit var deleteAllButton: Button
     private var selectedBox: EditText? = null
+    private var boxes = mutableListOf<EditText>()
     private val prefs by lazy { getSharedPreferences("boxes_prefs", MODE_PRIVATE) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         rootLayout = findViewById(R.id.rootLayout)
         addButton = findViewById(R.id.addButton)
+        deleteButton= findViewById(R.id.deleteButton)
+        deleteAllButton = findViewById(R.id.deleteAllButton)
 
         resetBoxes()
         loadBoxes()
@@ -37,6 +41,19 @@ class MainActivity : AppCompatActivity() {
         addButton.setOnClickListener {
             createBox("New Box", 10.dp, 10.dp)
             saveBoxes()
+        }
+
+        deleteButton.setOnClickListener {
+            selectedBox?.let {
+                rootLayout.removeView(it)
+                boxes.remove(it)
+                selectedBox = null
+                saveBoxes()
+            }
+        }
+
+        deleteAllButton.setOnClickListener {
+            resetBoxes()
         }
     }
 
@@ -76,6 +93,11 @@ class MainActivity : AppCompatActivity() {
                     isDragging = false
                 }
             }
+            editText.setOnClickListener {
+                selectedBox?.setBackgroundResource(android.R.drawable.edit_text)
+                selectedBox = editText
+                editText.setBackgroundResource(android.R.drawable.dialog_holo_light_frame)
+            }
             false
         }
 
@@ -108,11 +130,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     private fun resetBoxes() {
         prefs.edit().remove("boxes").apply()
         rootLayout.removeAllViews()
         boxes.clear()
         rootLayout.addView(addButton)
+        rootLayout.addView(deleteButton)
+        rootLayout.addView(deleteAllButton)
     }
 
 }
